@@ -1,4 +1,5 @@
-import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
+import { Auth } from '../auth/entities/auth.entity';
 
 @Entity()
 export class User {
@@ -22,6 +23,11 @@ export class User {
   islocked: boolean;
 
   @Column({ type: 'timestamp', nullable: true })
-  lockedat: Date | null;
+  lastlockedat: Date | null;
 
+  @Column({ unique: true, nullable: true })
+  email: string;
+
+  @OneToMany(() => Auth, (auth) => auth.user)
+  auths: Auth[];
 }

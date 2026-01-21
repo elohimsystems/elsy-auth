@@ -2,14 +2,16 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule } from '@nestjs/config';
 import { AuthModule } from './auth/auth.module';
-import { User } from './auth/user.entity';
+import { User } from './users/user.entity';
+import { UsersModule } from './users/users.module';
+import { Auth } from './auth/entities/auth.entity';
+import { EventAuth } from './auth/entities/eventauth.entity';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
-      isGlobal: true, // disponible en toda la app
+      isGlobal: true,
     }),
-
     TypeOrmModule.forRoot({
       type: 'postgres',
       host: process.env.DB_HOST,
@@ -17,10 +19,11 @@ import { User } from './auth/user.entity';
       username: process.env.DB_USERNAME,
       password: process.env.DB_PASSWORD,
       database: process.env.DB_NAME,
-      entities: [User],
-      synchronize: true, // solo en desarrollo
+      entities: [User, Auth, EventAuth],
+      synchronize: true,
     }),
     AuthModule,
+    UsersModule,
   ],
 })
 export class AppModule {}
