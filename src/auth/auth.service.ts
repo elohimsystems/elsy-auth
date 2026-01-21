@@ -1,81 +1,91 @@
 // src/auth/auth.service.ts
-import { Injectable, UnauthorizedException, BadRequestException, ForbiddenException } from '@nestjs/common';
+import {
+  Injectable,
+  UnauthorizedException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as argon2 from 'argon2';
-import { User } from './user.entity';
-import { ConfigService } from '@nestjs/config';
+import { User } from '../users/user.entity';
+import { Auth } from './entities/auth.entity';
+import { EventAuth } from './entities/eventauth.entity';
+import { UsersService } from 'src/users/users.service';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class AuthService {
   constructor(
-    @InjectRepository(User)
-    private readonly userRepository: Repository<User>,
-    private readonly configService: ConfigService
+    @InjectRepository(Auth)
+    private readonly authRepository: Repository<Auth>,
+    @InjectRepository(EventAuth)
+    private readonly eventAuthRepository: Repository<EventAuth>,
+    private readonly userService: UsersService,
+    private readonly jwtService: JwtService,
   ) {}
 
-  // Registro: crea usuario con contraseña hasheada
-  async register(username: string, password: string) {
-    const existing = await this.userRepository.findOne({ where: { username } });
-    if (existing) {
-      throw new BadRequestException('El usuario ya existe');
-    }
-
-    const hash = await argon2.hash(password); // Argon2 hash
-
-    const user = this.userRepository.create({
-      username,
-      password: hash,
-    });
-
-    const saved = await this.userRepository.save(user);
-
-    // No devolvemos el password
-    return {
-      id: saved.id,
-      username: saved.username,
-      message: 'Usuario registrado correctamente',
-    };
-  }
-
-  // Login: valida usuario + contraseña con Argon2
-  async login(username: string, password: string) {
-    const user = await this.userRepository.findOne({ where: { username } });
+  async validateUser(username: string, password: string) {
+    const user = await this.userService.findByUsername(username);
+    if (!user) throw new UnauthorizedException('Credenciales inválidas');
 
     if (!user || !user.isactive) {
       throw new UnauthorizedException('Credenciales incorrectas');
     }
 
-    // 1. Verificar si está bloqueado
     if (user.islocked) {
-      throw new ForbiddenException('Usuario bloqueado por múltiples intentos fallidos');
+      this.createAuth(user, 'USER_BLOCKED');
+      throw new UnauthorizedException(
+        'Usuario bloqueado por intentos fallidos',
+      );
     }
 
-    const isMatch = await argon2.verify(user.password, password);
+    const valid = await argon2.verify(user.password, password);
 
-    if (!isMatch) {
-      // Incrementar intentos fallidos
-      user.loginattempts += 1;
-
-      // Bloquear si supera el límite
-      if (user.loginattempts >= parseInt(this.configService.get<string>('MAX_ATTEMPTS'))) {
-        user.islocked = true;
-        user.lockedat = new Date();
-      }
-      
-      await this.userRepository.save(user);
-
-      throw new UnauthorizedException('Credenciales incorrectas');
+    if (!valid) {
+      await this.userService.registerFailedAttempt(
+        user,
+        parseInt(process.env.MAX_ATTEMPTS),
+        '3600s',
+      );
+      throw new UnauthorizedException('Credenciales inválidas');
     }
 
-    // 3. Si el login es correcto, reiniciar intentos
-    user.loginattempts = 0;
-    await this.userRepository.save(user);
+    await this.userService.resetLoginAttempts(user);
+    return user;
+  }
+
+  async login(user: any) {
+    const payload = { sub: user.id, email: user.email };
+    const token = this.jwtService.sign(payload);
+    console.log('TOKEN:', token);
+    console.log('DECODED:', this.jwtService.decode(token));
 
     return {
-      id: user.id,
-      username: user.username,
-      message: 'Login correcto',
+      access_token: this.jwtService.sign(payload),
     };
+  }
+
+  async createAuth(user: User, eventCode: string) {
+    const eventAuth = await this.eventAuthRepository.findOneBy({
+      code: eventCode,
+    });
+    const authUser = await this.authRepository.create({
+      user: user,
+      event: eventAuth,
+      eventat: new Date(),
+    });
+    await this.authRepository.save(authUser);
+  }
+
+  async verifyToken(token: string) {
+    try {
+      return this.jwtService.verify(token); // 👈 VERIFICAR TOKEN
+    } catch (e) {
+      throw new UnauthorizedException('Token inválido o expirado');
+    }
+  }
+
+  decodeToken(token: string) {
+    return this.jwtService.decode(token); // 👈 DECODIFICAR SIN VALIDAR
   }
 }

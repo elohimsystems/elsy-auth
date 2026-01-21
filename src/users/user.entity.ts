@@ -1,4 +1,5 @@
-import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
+import { Auth } from '../auth/entities/auth.entity';
 
 @Entity()
 export class User {
@@ -11,7 +12,7 @@ export class User {
   // Guarda el hash, no la contraseña en texto plano
   @Column()
   password: string;
-
+  
   @Column({ default: true })
   isactive: boolean;
 
@@ -22,6 +23,12 @@ export class User {
   islocked: boolean;
 
   @Column({ type: 'timestamp', nullable: true })
-  lockedat: Date | null;
+  lastlockedat: Date | null;
+
+  @Column({ unique: true, nullable: false })
+  email: string;
+
+  @OneToMany(() => Auth, auth => auth.user)
+  auths: Auth[];
 
 }
