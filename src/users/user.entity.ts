@@ -12,7 +12,7 @@ export class User {
   // Guarda el hash, no la contraseña en texto plano
   @Column()
   password: string;
-  
+
   @Column({ default: true })
   isactive: boolean;
 
@@ -25,10 +25,9 @@ export class User {
   @Column({ type: 'timestamp', nullable: true })
   lastlockedat: Date | null;
 
-  @Column({ unique: true, nullable: false })
+  @Column({ unique: true, nullable: true })
   email: string;
 
-  @OneToMany(() => Auth, auth => auth.user)
+  @OneToMany(() => Auth, (auth) => auth.user)
   auths: Auth[];
-
 }
