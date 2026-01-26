@@ -6,6 +6,7 @@ import { User } from './users/user.entity';
 import { UsersModule } from './users/users.module';
 import { Auth } from './auth/entities/auth.entity';
 import { EventAuth } from './auth/entities/eventauth.entity';
+import { MailModule } from './common-elsy/mail/mail.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { EventAuth } from './auth/entities/eventauth.entity';
     }),
     AuthModule,
     UsersModule,
+    MailModule,
   ],
 })
 export class AppModule {}
