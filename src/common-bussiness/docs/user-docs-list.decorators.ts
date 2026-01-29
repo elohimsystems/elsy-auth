@@ -58,3 +58,11 @@ export function DocsUsersCreate(summary: string) {
     ApiResponse({ status: 401, description: 'Token inválido o expirado' }),
   );
 }
+
+export function DocsUsersUpdate(summary: string) {
+  return applyDecorators(
+    ApiOperation({ summary }),
+    ApiResponse({ status: 200, description: 'Operación exitosa' }),
+    ApiResponse({ status: 401, description: 'Token inválido o expirado' }),
+  );
+}
