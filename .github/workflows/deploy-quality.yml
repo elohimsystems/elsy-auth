@@ -36,6 +36,6 @@ jobs:
           username: ${{ secrets.FTP_USER }}
           password: ${{ secrets.FTP_PASS }}
           protocol: ftp
-          local-dir: dist
+          local-dir: dist/
           server-dir: /qas-elsy-auth/
           log-level: verbose
