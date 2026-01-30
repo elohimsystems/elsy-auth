@@ -37,5 +37,5 @@ jobs:
           password: ${{ secrets.FTP_PASS }}
           protocol: ftp
           local-dir: dist
-          server-dir: /elsy-auth.elohimsystems.com
+          server-dir: /qas-elsy-auth.elohimsystems.com/
           log-level: verbose
