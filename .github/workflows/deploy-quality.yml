@@ -31,9 +31,6 @@ jobs:
 
       - name: Copy package.json to dist
         run: cp package.json dist/
-
-      - name: Copy .env to dist
-        run: cp .env /
         
       - name: Upload dist via FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.4
