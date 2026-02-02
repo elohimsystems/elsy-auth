@@ -29,6 +29,9 @@ jobs:
       - name: Verify dist folder
         run: test -d dist
 
+      - name: Copy package.json to dist
+        run: cp package.json dist/
+        
       - name: Upload dist via FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.4
         with:
@@ -36,6 +39,6 @@ jobs:
           username: ${{ secrets.FTP_USER }}
           password: ${{ secrets.FTP_PASS }}
           protocol: ftp
-          local-dir: dist
-          server-dir: /elsy-auth.elohimsystems.com
+          local-dir: dist/
+          server-dir: /dist/
           log-level: verbose
