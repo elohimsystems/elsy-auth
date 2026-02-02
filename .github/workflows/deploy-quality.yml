@@ -8,7 +8,7 @@ on:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
-    environment: FTP_SERVICE
+    environment: quality
 
     steps:
       - name: Checkout repository

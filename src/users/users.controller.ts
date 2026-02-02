@@ -6,7 +6,10 @@ import { RegisterUserDto } from './dtos/register-user.dto';
 import { UpdateUserDto } from './dtos/update-user.dto';
 import { ValidationPipe } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { DocsUsersList } from 'src/common-bussiness/docs/user-docs-list.decorators';
+import {
+  DocsUsersadvancedSearch,
+  DocsUsersUnlock,
+} from 'src/common-bussiness/docs/user-docs-list.decorators';
 import { QueryUsersDto } from './dtos/query-users.dto';
 import { SendChangePasswordEmailDto } from './dtos/send-passwordchange-email.dto';
 import { ChangePasswordUserDto } from './dtos/changepassword-user.dto';
@@ -36,14 +39,14 @@ export class UsersController {
     return await this.usersService.deactivate(body.userId);
   }
 
-  @DocsUsersList()
+  @DocsUsersadvancedSearch()
   @UseGuards(JwtAuthGuard)
   @Post('query')
   async advancedSearch(@Body(new ValidationPipe()) filters: QueryUsersDto) {
     return await this.usersService.advancedQuery(filters);
   }
 
-  // @DocsUsersList()
+  //@DocsUsersList()
   @UseGuards(JwtAuthGuard)
   @Post('sendchangepasswordemail')
   async sendChangePasswordEmail(
@@ -61,7 +64,7 @@ export class UsersController {
     return await this.usersService.changePassword(body);
   }
 
-  // @DocsUsersList()
+  @DocsUsersUnlock('Desbloquea un usuario bloqueado')
   @UseGuards(JwtAuthGuard)
   @Post('unlock')
   async Unlock(@Body(new ValidationPipe()) body: UnlockUserDto) {
