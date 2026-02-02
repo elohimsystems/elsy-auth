@@ -1,0 +1,44 @@
+name: Deploy to Quality
+
+on:
+  push:
+    branches:
+      - quality
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    environment: quality
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 18
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24.13.0
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build NestJS app
+        run: npm run build
+
+      # Opcional: verificar que dist existe
+      - name: Verify dist folder
+        run: test -d dist
+
+      - name: Copy package.json to dist
+        run: cp package.json dist/
+        
+      - name: Upload dist via FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+        with:
+          server: ${{ secrets.FTP_HOST }}
+          username: ${{ secrets.FTP_USER }}
+          password: ${{ secrets.FTP_PASS }}
+          protocol: ftp
+          local-dir: dist/
+          server-dir: /dist/
+          log-level: verbose
