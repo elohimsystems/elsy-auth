@@ -1,8 +1,7 @@
 import { applyDecorators } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
-import { Or } from 'typeorm';
 
-export function DocsUsersList() {
+export function DocsUsersadvancedSearch() {
   return applyDecorators(
     ApiOperation({
       summary: 'Lista los usarios con filtros avanzados si se desea.',
@@ -62,6 +61,19 @@ export function DocsUsersCreate(summary: string) {
 export function DocsUsersUpdate(summary: string) {
   return applyDecorators(
     ApiOperation({ summary }),
+    ApiResponse({ status: 200, description: 'Operación exitosa' }),
+    ApiResponse({ status: 401, description: 'Token inválido o expirado' }),
+  );
+}
+
+export function DocsUsersUnlock(summary: string) {
+  return applyDecorators(
+    ApiOperation({
+      summary: summary,
+      description: `
+        Desbloquea un usuario que ha sido bloqueado debido a múltiples intentos fallidos de inicio de sesión.
+        `,
+    }),
     ApiResponse({ status: 200, description: 'Operación exitosa' }),
     ApiResponse({ status: 401, description: 'Token inválido o expirado' }),
   );
