@@ -56,12 +56,16 @@ export class AuthService {
 
   async login(user: any) {
     const payload = { sub: user.id, email: user.email };
-    const token = this.jwtService.sign(payload);
-    console.log('TOKEN:', token);
-    console.log('DECODED:', this.jwtService.decode(token));
+    // const token = this.jwtService.sign(payload);
+    // console.log('DECODED:', this.jwtService.decode(token));
 
     return {
       access_token: this.jwtService.sign(payload),
+      user: {
+        id: user.id,
+        email: user.email,
+        roles: user.roles,
+      },
     };
   }
 

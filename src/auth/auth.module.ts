@@ -20,15 +20,15 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
-        secret: config.get<string>('JWT_SECRET'),
+        secret: config.get('JWT_SECRET'),
         signOptions: {
           expiresIn: config.get('JWT_EXPIRATION'),
         },
       }),
     }),
   ],
-  providers: [AuthService, JwtStrategy], 
+  providers: [AuthService, JwtStrategy],
   controllers: [AuthController],
-  exports: [AuthService, JwtStrategy,JwtModule,PassportModule], // opcional pero recomendado
+  exports: [AuthService, JwtStrategy, JwtModule, PassportModule], // opcional pero recomendado
 })
 export class AuthModule {}

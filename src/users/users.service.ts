@@ -14,14 +14,17 @@ import { SendChangePasswordEmailDto } from './dtos/send-passwordchange-email.dto
 import { MailService } from 'src/common-elsy/mail/mail.service';
 import { ChangePasswordUserDto } from './dtos/changepassword-user.dto';
 import { UnlockUserDto } from './dtos/unlock-user.dto';
+import { OnModuleInit } from '@nestjs/common/interfaces';
+import { RolesService } from 'src/roles/roles.service';
 
 @Injectable()
-export class UsersService {
+export class UsersService implements OnModuleInit {
   constructor(
     @InjectRepository(User)
     private readonly usersRepo: Repository<User>,
     private readonly databaseService: DatabaseService,
     private readonly mailService: MailService,
+    private readonly rolesService: RolesService,
   ) {}
 
   // Crear usuario con Argon2
@@ -213,5 +216,37 @@ export class UsersService {
     user.lastlockedat = null;
     await this.usersRepo.save(user);
     return true;
+  }
+
+  async onModuleInit() {
+    const username = 'admin';
+    const exists = await this.usersRepo.findOne({ where: { username } });
+    const rolAdmin = await this.rolesService.findByRole('Administrator');
+    if (!rolAdmin) {
+      throw new NotFoundException(
+        'Role Administrator not found. Please run RolesService first to create it.',
+      );
+    }
+
+    if (!exists) {
+      const password = await argon2.hash('admin123');
+
+      await this.usersRepo.save({
+        username: username,
+        password,
+        email: process.env.EMAIL_ADMIN,
+        roles: [rolAdmin],
+      });
+      console.log('✔ Usuario admin creado automáticamente');
+    } else {
+      console.log('x Usuario admin ya existe');
+    }
+  }
+
+  async findByIdWithRoles(id: number) {
+    return this.usersRepo.findOne({
+      where: { id },
+      relations: ['roles'], // 👈 Carga los roles del usuario
+    });
   }
 }

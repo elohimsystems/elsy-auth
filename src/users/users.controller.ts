@@ -5,22 +5,29 @@ import { UsersService } from './users.service';
 import { RegisterUserDto } from './dtos/register-user.dto';
 import { UpdateUserDto } from './dtos/update-user.dto';
 import { ValidationPipe } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
-import {
-  DocsUsersadvancedSearch,
-  DocsUsersUnlock,
-} from 'src/common-bussiness/docs/user-docs-list.decorators';
 import { QueryUsersDto } from './dtos/query-users.dto';
 import { SendChangePasswordEmailDto } from './dtos/send-passwordchange-email.dto';
 import { ChangePasswordUserDto } from './dtos/changepassword-user.dto';
 import { UnlockUserDto } from './dtos/unlock-user.dto';
+import { User } from './user.entity';
+import { SwaggerCrud } from 'src/common-bussiness/docs/users-docs.decorators';
+import { Permission } from 'src/permission/permission.decorator';
+import { PermissionsGuard } from 'src/permission/permissions.guard';
 
-@ApiTags('users')
+// @ApiTags('users')
+const UsersSwagger = SwaggerCrud({
+  tag: 'Users',
+  createDto: RegisterUserDto,
+  updateDto: UpdateUserDto,
+  entity: User,
+});
+
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-  @UseGuards(JwtAuthGuard)
+  @UsersSwagger.register()
+  @Permission('users.register')
   @Post('register')
   async register(@Body(new ValidationPipe()) body: RegisterUserDto) {
     const { username, password, email } = body;
@@ -39,8 +46,9 @@ export class UsersController {
     return await this.usersService.deactivate(body.userId);
   }
 
-  @DocsUsersadvancedSearch()
-  @UseGuards(JwtAuthGuard)
+  // @DocsUsersadvancedSearch()
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @Permission('users.list')
   @Post('query')
   async advancedSearch(@Body(new ValidationPipe()) filters: QueryUsersDto) {
     return await this.usersService.advancedQuery(filters);
@@ -64,7 +72,7 @@ export class UsersController {
     return await this.usersService.changePassword(body);
   }
 
-  @DocsUsersUnlock('Desbloquea un usuario bloqueado')
+  // @DocsUsersUnlock('Desbloquea un usuario bloqueado')
   @UseGuards(JwtAuthGuard)
   @Post('unlock')
   async Unlock(@Body(new ValidationPipe()) body: UnlockUserDto) {

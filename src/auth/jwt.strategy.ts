@@ -1,36 +1,28 @@
 import { Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
+import { UsersService } from 'src/users/users.service';
 
 @Injectable()
-export class JwtStrategy extends PassportStrategy(Strategy,'jwt') {
-  constructor() {
+export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
+  constructor(private usersService: UsersService) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
       secretOrKey: process.env.JWT_SECRET,
-      passReqToCallback: true
+      // passReqToCallback: true,
     });
-    console.log('JWT SECRET:', process.env.JWT_SECRET);
-    console.log('🔥 JwtStrategy inicializada correctamente');
+    // console.log('JWT SECRET:', process.env.JWT_SECRET);
+    // console.log('🔥 JwtStrategy inicializada correctamente');
   }
-  
-  // async validate(payload: any) {
-  //   // Lo que retornes aquí se adjunta a req.user
-  //   console.log('JWT STRATEGY VALIDANDO TOKEN...');
-  //   return {
-  //     userId: payload.sub,
-  //     email: payload.email,
-  //     // roles: payload.roles,
-  //   };
-  // }
-  async validate(req: any, payload: any) {
-    const token = req.headers.authorization;
+  async validate(payload: any) {
+    // Cargar el usuario completo con roles
+    const user = await this.usersService.findByIdWithRoles(payload.sub);
 
-    console.log('🔍 TOKEN RECIBIDO:', token);
-    console.log('📦 PAYLOAD DECODIFICADO:', payload);
-
-    return payload;
+    return {
+      id: user.id,
+      email: user.email,
+      roles: user.roles,
+    };
   }
-
 }
