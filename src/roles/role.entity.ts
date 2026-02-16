@@ -21,6 +21,17 @@ export class Role {
   description: string;
 
   @ManyToMany(() => Route, (route) => route.roles)
+  @JoinTable({
+    name: 'role_routes',
+    joinColumn: {
+      name: 'role_id',
+      referencedColumnName: 'id',
+    },
+    inverseJoinColumn: {
+      name: 'route_id',
+      referencedColumnName: 'id',
+    },
+  })
   routes: Route[];
 
   @ManyToMany(() => DataTable, (dataTable) => dataTable.roles)

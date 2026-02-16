@@ -19,10 +19,5 @@ export class Route {
   path: string; // /users, /auth/login
 
   @ManyToMany(() => Role, (role) => role.routes)
-  @JoinTable({
-    name: 'role_routes',
-    joinColumn: { name: 'route_id' },
-    inverseJoinColumn: { name: 'role_id' },
-  })
   roles: Role[];
 }

@@ -7,7 +7,7 @@ import {
   IsStrongPassword,
   MinLength,
 } from 'class-validator';
-import { IsNonSpacesString } from 'src/common-elsy/validators/is-non-empty-string.validator';
+import { IsNonSpacesString } from 'src/common/validators/is-non-empty-string.validator';
 
 export class UpdateUserDto {
   @IsInt()

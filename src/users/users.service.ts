@@ -9,13 +9,14 @@ import * as argon2 from 'argon2';
 import { User } from './user.entity';
 import { UpdateUserDto } from './dtos/update-user.dto';
 import { QueryUsersDto } from './dtos/query-users.dto';
-import { DatabaseService } from 'src/common-elsy/database/database.service';
+import { DatabaseService } from 'src/common/database/database.service';
 import { SendChangePasswordEmailDto } from './dtos/send-passwordchange-email.dto';
-import { MailService } from 'src/common-elsy/mail/mail.service';
+import { MailService } from 'src/common/mail/mail.service';
 import { ChangePasswordUserDto } from './dtos/changepassword-user.dto';
 import { UnlockUserDto } from './dtos/unlock-user.dto';
 import { OnModuleInit } from '@nestjs/common/interfaces';
 import { RolesService } from 'src/roles/roles.service';
+import { Role } from 'src/roles/role.entity';
 
 @Injectable()
 export class UsersService implements OnModuleInit {
@@ -137,12 +138,31 @@ export class UsersService implements OnModuleInit {
 
     // SELECT dinámico
     if (select?.length) {
+      // Validate against entity properties (columns + relations)
+      const validProps = this.databaseService.getEntityProperties(User);
       select.forEach((field) => {
-        if (!this.databaseService.fieldExists(User, field)) {
+        if (!validProps.includes(field)) {
           throw new BadRequestException('Invalid field in select: ' + field);
         }
       });
-      query.select(select.map((f) => `user.${f}`));
+
+      // Get metadata to detect relations
+      const metadata = this.usersRepo.metadata;
+      const relationNames = metadata.relations.map((r) => r.propertyName);
+
+      // Separate columns and relations
+      const columnFields = select.filter((f) => !relationNames.includes(f));
+      const relationFields = select.filter((f) => relationNames.includes(f));
+
+      // Select only the requested columns
+      if (columnFields.length) {
+        query.select(columnFields.map((f) => `user.${f}`));
+      }
+
+      // Load relations if they are in select
+      relationFields.forEach((field) => {
+        query.leftJoinAndSelect(`user.${field}`, field);
+      });
     }
 
     // AND conditions
@@ -154,6 +174,7 @@ export class UsersService implements OnModuleInit {
             'Invalid field in AND condition: ' + cond.field,
           );
         }
+
         query.andWhere(`user.${cond.field} ${cond.operator} :${paramKey}`, {
           [paramKey]: cond.value,
         });
@@ -169,6 +190,7 @@ export class UsersService implements OnModuleInit {
             'Invalid field in OR condition: ' + cond.field,
           );
         }
+
         return `user.${cond.field} ${cond.operator} :${paramKey}`;
       });
 
@@ -248,5 +270,24 @@ export class UsersService implements OnModuleInit {
       where: { id },
       relations: ['roles'], // 👈 Carga los roles del usuario
     });
+  }
+
+  async assignRolesToUser(userId: number, roleIds: number[]): Promise<User> {
+    // Verificar que el usuario existe
+    const user = await this.findById(userId);
+
+    // Buscar los roles por IDs
+    const userRepo = this.usersRepo;
+    const roles = await userRepo.manager.getRepository(Role).findByIds(roleIds);
+
+    if (!roles || roles.length === 0) {
+      throw new NotFoundException('Roles not found');
+    }
+
+    // Asignar los roles al usuario
+    user.roles = roles;
+
+    // Guardar cambios
+    return await this.usersRepo.save(user);
   }
 }

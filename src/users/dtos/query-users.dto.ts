@@ -1,39 +1,41 @@
-// users/dto/query-users.dto.ts
-import { Type } from 'class-transformer';
-import {
-  IsArray,
-  IsOptional,
-  IsString,
-  IsEnum,
-  ValidateNested,
-} from 'class-validator';
-import { Operator } from 'src/common-elsy/operators.enum';
+// import { Type } from 'class-transformer';
+// import {
+//   IsArray,
+//   IsOptional,
+//   IsString,
+//   ValidateNested,
+//   IsNotEmpty,
+//   IsEnum,
+// } from 'class-validator';
+import { QueryDatabaseDto } from 'src/common/database/dtos/query-database.dto';
+// import { Operator } from 'src/common/operators.enum';
 
-export class ConditionDto {
-  @IsString()
-  field: string;
+// export class ConditionDto {
+//   @IsString()
+//   @IsNotEmpty()
+//   field: string;
 
-  @IsString()
-  @IsEnum(Operator)
-  operator: Operator;
+//   @IsEnum(Operator)
+//   @IsNotEmpty()
+//   operator: Operator;
 
-  value: any;
-}
+//   @IsNotEmpty()
+//   value: any;
+// }
 
-export class QueryUsersDto {
-  @IsOptional()
-  @IsArray()
-  select?: string[];
-
-  @IsOptional()
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => ConditionDto)
-  and?: ConditionDto[];
-
-  @IsOptional()
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => ConditionDto)
-  or?: ConditionDto[];
+export class QueryUsersDto extends QueryDatabaseDto {
+  // @IsOptional()
+  // @IsArray()
+  // @IsString({ each: true })
+  // select?: string[];
+  // @IsOptional()
+  // @IsArray()
+  // @ValidateNested({ each: true })
+  // @Type(() => ConditionDto)
+  // and?: ConditionDto[];
+  // @IsOptional()
+  // @IsArray()
+  // @ValidateNested({ each: true })
+  // @Type(() => ConditionDto)
+  // or?: ConditionDto[];
 }
