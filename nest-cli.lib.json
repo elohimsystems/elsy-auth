@@ -1,0 +1,16 @@
+{
+  "$schema": "node_modules/@nestjs/cli/lib/schema.json",
+  "version": "2.9.2",
+  "collection": "@nestjs/schematics",
+  "sourceRoot": "src",
+  "compilerOptions": {
+    "deleteOutDir": true,
+    "webpack": true,
+    "tsConfigPath": "tsconfig.lib.json"
+  },
+  "projects": {},
+  "monorepo": false,
+  "root": "src",
+  "assets": ["**/*.hbs"],
+  "watchAssets": true
+}

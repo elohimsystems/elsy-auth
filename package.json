@@ -1,12 +1,24 @@
 {
   "name": "elsy-auth",
-  "version": "0.0.1",
-  "description": "",
-  "author": "",
-  "private": true,
-  "license": "UNLICENSED",
+  "version": "1.0.0",
+  "description": "Reusable NestJS authentication and authorization module",
+  "author": "elohimsystems",
+  "license": "MIT",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "publishConfig": {
+    "access": "public",
+    "main": "lib/index.js",
+    "types": "lib/index.d.ts"
+  },
+  "files": [
+    "lib",
+    "package.json"
+  ],
   "scripts": {
     "build": "nest build",
+    "build:lib": "tsc -p tsconfig.lib.json",
+    "pack": "npm run build:lib && npm pack",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
     "start:dev": "nest start --watch",

@@ -3,6 +3,7 @@ import {
   Injectable,
   UnauthorizedException,
   ForbiddenException,
+  Inject,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -12,6 +13,7 @@ import { Auth } from './entities/auth.entity';
 import { EventAuth } from './entities/eventauth.entity';
 import { UsersService } from 'src/users/users.service';
 import { JwtService } from '@nestjs/jwt';
+import { ElsyAuthConfig, AUTH_CONFIG } from '../common/config/elsy-auth.config';
 
 @Injectable()
 export class AuthService {
@@ -22,6 +24,7 @@ export class AuthService {
     private readonly eventAuthRepository: Repository<EventAuth>,
     private readonly userService: UsersService,
     private readonly jwtService: JwtService,
+    @Inject(AUTH_CONFIG) private readonly config: ElsyAuthConfig,
   ) {}
 
   async validateUser(username: string, password: string) {
@@ -44,8 +47,8 @@ export class AuthService {
     if (!valid) {
       await this.userService.registerFailedAttempt(
         user,
-        parseInt(process.env.MAX_ATTEMPTS),
-        '3600s',
+        this.config.maxAttempts,
+        this.config.lockDuration,
       );
       throw new UnauthorizedException('Credenciales inválidas');
     }
