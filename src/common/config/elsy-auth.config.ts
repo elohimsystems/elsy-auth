@@ -7,10 +7,31 @@ export interface ElsyAuthConfig {
   userEntity: Type<IUser>;
   roleEntity: Type<any>;
   routeEntity?: Type<any>;
+  
   jwtSecret: string;
   jwtExpiration: string;
   maxAttempts: number;
-  lockDuration: string; // e.g., '1h', '3600s'
+  lockDuration: string;
+
+  emailFrom?: string;
+  emailAdmin?: string;
+  linkChangePassword?: string;
+  
+  database?: {
+    type?: 'postgres' | 'mysql' | 'sqlite';
+    host?: string;
+    port?: number;
+    username?: string;
+    password?: string;
+    database?: string;
+  };
+  
+  mail?: {
+    host?: string;
+    port?: number;
+    user?: string;
+    pass?: string;
+  };
 }
 
 export const AUTH_CONFIG = 'ELSY_AUTH_CONFIG';

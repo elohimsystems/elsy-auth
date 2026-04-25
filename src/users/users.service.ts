@@ -2,6 +2,7 @@ import {
   Injectable,
   NotFoundException,
   BadRequestException,
+  Inject,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -17,6 +18,7 @@ import { UnlockUserDto } from './dtos/unlock-user.dto';
 import { OnModuleInit } from '@nestjs/common/interfaces';
 import { RolesService } from 'src/roles/roles.service';
 import { Role } from 'src/roles/role.entity';
+import { AUTH_CONFIG, ElsyAuthConfig } from '../common/config/elsy-auth.config';
 
 @Injectable()
 export class UsersService implements OnModuleInit {
@@ -26,6 +28,7 @@ export class UsersService implements OnModuleInit {
     private readonly databaseService: DatabaseService,
     private readonly mailService: MailService,
     private readonly rolesService: RolesService,
+    @Inject(AUTH_CONFIG) private config: ElsyAuthConfig,
   ) {}
 
   // Crear usuario con Argon2
@@ -212,7 +215,7 @@ export class UsersService implements OnModuleInit {
     await this.mailService.sendSimpleEmail(
       body.email,
       `Hemos recibido una solicitud para cambiar su contraseña. Si no realizó esta solicitud, ignore este correo.
-      Para cambiar su contraseña, haga clic en el siguiente enlace: ${process.env.LINK_CHANGE_PASSWORD}       
+      Para cambiar su contraseña, haga clic en el siguiente enlace: ${this.config.linkChangePassword}       
       `,
     );
     return true;
@@ -256,7 +259,7 @@ export class UsersService implements OnModuleInit {
       await this.usersRepo.save({
         username: username,
         password,
-        email: process.env.EMAIL_ADMIN,
+        email: this.config.emailAdmin,
         roles: [rolAdmin],
       });
       console.log('✔ Usuario admin creado automáticamente');
